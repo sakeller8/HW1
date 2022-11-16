@@ -1,60 +1,36 @@
-library(readr)
-library(tidyverse)
-library(lubridate)
-library(ggplot2)
-library(dplyr)
+#Shayna Keller
 
-#read in file with NAs ommitted
+#this function plots...
 
-series <- read.csv("D:/Fall 2022/MEES708/Homeworks/708Y Homework 1/AD_cluster_3.csv")
-#rownames(series) <- series[, 1]
-#series <- series[, -1]3
-
-# check_class tests whether a thing is a usable data type
-check_class <- function(thing){
-    if(
-        !any(
-            is.data.frame(thing),
-            is.matrix(thing),
-            is.ts(thing))
-    ){stop("Object must be a data frame, matrix or ts")}
+myplot <- function(object, main_title = "Your Title Here", 
+                   x_title = "Your X-Axis Title Here", 
+                   y_title = "Your Y-Title Here",
+                   Mean = "green", Median = "blue", `Q1 and Q3` = "orange",
+                   plotmean = TRUE) {
+    check_class(object)
+    object_clean <- na.omit(object)
+    object_plot <- main_plotter(object_clean, main_title = main_title,
+                                x_title = x_title,
+                                y_title = y_title, mean_color_in = Mean,
+                                median_color_in = Median, quantile_color_in = `Q1 and Q3`,
+                                plotmean = plotmean)
+    return(object_plot)
+    
+    
 }
-
-# test check_class
-#check_class(series) # does nothing
-#check_class(c(1,2,4)) # throws an errors
-
-#na.omit
-
-my_omit <- function(thing) {
-    na.omit(thing)
-}
-
-
-### old stuff
-
-#error if file is only numeric
-#if (is.numeric(series) = TRUE))
-
-#is.okay <- function(series) {
-#if((is.numeric(series) = TRUE)) {
-#return("STOP")
-#} else {
-#return ("OKAY")
-#}
-
 
 main_plotter <- function(series, main_title = "Your Title Here", x_title = "Your X-Axis Title Here", 
                          y_title = "Your Y-Axis Title Here", mean_color_in = "green", 
-                         median_color_in = "blue", quantile_color_in = "orange"){
-    check_class <- function(thing){
-        if(
-            !any(
-                is.data.frame(thing),
-                is.matrix(thing),
-                is.ts(thing))
-        ){stop("Object must be a data frame, matrix or ts")}
-    }
+                         median_color_in = "blue", quantile_color_in = "orange",
+                         plotmean = TRUE){
+    # check_class <- function(thing){
+    #     if(
+    #         !any(
+    #             is.data.frame(thing),
+    #             is.matrix(thing),
+    #             is.ts(thing))
+    #     ){stop("Object must be a data frame, matrix or ts")}
+    # }
     my_omit <- function(thing) {
         na.omit(thing)
     }
@@ -107,13 +83,19 @@ main_plotter <- function(series, main_title = "Your Title Here", x_title = "Your
     # print(nrow(df2))
     #plot
     
-    plot1 <- ggplot() +
-        geom_line(data=df1, aes(x=Date, y=series_mean, group=1, color = "Mean"),
-                  size = 1, shape = 21) +
-        geom_line(data=df1, aes(x=Date, y=series_median, group=1, color = "Median"),
-                  size = 1, shape = 21) +
-        geom_point(data=df1, aes(x=Date, y=series_mean, group=1, color = "Mean"),
-                   size = 2, shape = 21)
+    if (plotmean == TRUE) {
+        plot1 <- ggplot() +
+            geom_line(data=df1, aes(x=Date, y=series_mean, group=1, color = "Mean"),
+                      size = 1, shape = 21) +
+            geom_line(data=df1, aes(x=Date, y=series_median, group=1, color = "Median"), 
+                      size = 1, shape = 21) +
+            geom_point(data=df1, aes(x=Date, y=series_mean, group=1, color = "Mean"),
+                       size = 2, shape = 21)
+    } else {
+        plot1 <- ggplot() +
+            geom_line(data=df1, aes(x=Date, y=series_median, group=1, color = "Median"),
+                      size = 1, shape = 21)
+    }
     
     #plot1
     
@@ -133,56 +115,38 @@ main_plotter <- function(series, main_title = "Your Title Here", x_title = "Your
     
     #plot2
     
-    plot3 <- plot2 + ggtitle(main_title) +
-        labs(x= x_title, y = y_title) +
-        scale_color_manual(values = c(Mean = mean_color_in, Median = median_color_in, 
-                                      `Q1 and Q3` = quantile_color_in))
+    if (plotmean == TRUE) {
+        plot3 <- plot2 + ggtitle(main_title) +
+            labs(x = x_title, y = y_title) +
+            scale_color_manual(values = c(Mean = mean_color_in, Median = median_color_in, 
+                                          `Q1 and Q3` = quantile_color_in))
+    } else {
+        plot3 <- plot2 + ggtitle(main_title) +
+            labs(x = x_title, y = y_title) +
+            scale_color_manual(values = c(Median = median_color_in, 
+                                          `Q1 and Q3` = quantile_color_in))
+    }
     
     return(plot3)
     
 }
 
-
-# test main plotter
-main_plotter(series)
-
-#big function
-
-myplot <- function(object, main_title = "Your Title Here", 
-                         x_title = "Your X-Axis Title Here", 
-                         y_title = "Your Y-Title Here",
-                         Mean = "green", Median = "blue", `Q1 and Q3` = "orange") {
-    check_class(object)
-    object_clean <- na.omit(object)
-    object_plot <- main_plotter(object_clean, main_title = main_title,
-                                x_title = x_title,
-                                y_title = y_title, mean_color_in = Mean,
-                                median_color_in = Median, quantile_color_in = `Q1 and Q3`)
-    return(object_plot)
-    
+# check_class tests whether a thing is a usable data type
+check_class <- function(thing) {
+    if(
+        !any(
+            is.data.frame(thing),
+            is.matrix(thing),
+            is.ts(thing))) {
+        stop("Object must be a data frame, matrix or ts")
+    }
+    if(is.null(ncol(thing))) {
+        stop("object has no columns")
+    }
+    if (ncol(thing) <= 1) {
+        stop("object must have more than one column")
+    }
     
 }
 
-
-# myplot(series)
-# 
-# myplot(series, main_title = "Plot", 
-#              x_title = "Year",
-#              y_title = "Summaries",
-#              Mean = "red",
-#              Median = "green",
-#              `Q1 and Q3` = "blue")
-# 
-# my_test_plot <- myplot(series, main_title = "Plot", 
-#                        x_title = "Year",
-#                        y_title = "Summaries",
-#                        Mean = "black",
-#                        Median = "green",
-#                        `Q1 and Q3` = "blue")
-#my_test_plot
-
-#big_function(c(1:20))
-
-#series_wna <- series
-#series_wna$CHOTF[c(3, 5, 7)] <- NA
-#series_wna$PAXOH[c(3, 5, 17)] <- NA
+#the last line of the file
